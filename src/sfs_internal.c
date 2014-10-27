@@ -29,6 +29,7 @@
 File files[MAX_FILES];
 OpenFile openFiles[MAX_OPEN_FILES];
 bool freeBlocks[MAX_BLOCKS];
+bool initialized = false;
 
 
 File * File_find_empty() {
@@ -62,9 +63,7 @@ int File_find_by_path(File **_file, const char *path) {
         char *token = tokens[i];
 
         File *next = File_find_in_dir(token, directory);
-        if (!next) {
-            return SFS_ERR_FILE_NOT_FOUND;
-        }
+        check(next != NULL, SFS_ERR_FILE_NOT_FOUND);
 
         // If next token is NULL, this is the last token.
         if (tokens[i+1] == NULL) {
@@ -76,7 +75,7 @@ int File_find_by_path(File **_file, const char *path) {
     }
 
     // Prevent memory leaks.
-    for (int i = 1; tokens[i] != NULL; i++) {
+    for (int i = 0; tokens[i] != NULL; i++) {
         free(tokens[i]);
     }
     free(tokens);
@@ -85,7 +84,7 @@ int File_find_by_path(File **_file, const char *path) {
 
 error:
     if (tokens) {
-        for (int i = 1; tokens[i] != NULL; i++) {
+        for (int i = 0; tokens[i] != NULL; i++) {
             free(tokens[i]);
         }
         free(tokens);
@@ -365,7 +364,7 @@ error:
         for (int i = 0; tokens[i] != NULL; i++) {
             free(tokens[i]);
         }
+        free(tokens);
     }
-    free(tokens);
     return err_code;
 }

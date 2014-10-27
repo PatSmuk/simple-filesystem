@@ -21,13 +21,48 @@
 #include "sfs_internal.h"
 #include "blockio.h"
 
+void free_directory_lists(void) {
+    // For each file.
+    for (int i = 0; i < MAX_FILES; i++) {
+        File *file = &files[i];
+
+        // If it's a directory and has contents.
+        if (File_is_directory(file) && file->dirContents != NULL) {
+            FileNode *node = file->dirContents, *lastNode;
+            file->dirContents = NULL;
+
+            // Go through each node of the list and free them.
+            while (node) {
+                lastNode = node;
+                node = node->next;
+
+                if (node) {
+                    node->prev = NULL;
+                }
+
+                free(lastNode);
+            }
+        }
+    }
+}
+
 int sfs_initialize(int erase) {
 
     int err_code = 0;
+    char buffer[BLOCK_SIZE];
     FileSystemHeader header;
 
+    // Free directory list memory at exit.
+    atexit(free_directory_lists);
+
+    // If initialize is called twice, memory could be leaked.
+    // This will clean up any FileNodes that already exist.
+    if (initialized) {
+        free_directory_lists();
+    }
+    initialized = true;
+
     // 1. Load the first page (header) of the file system into a buffer.
-    char buffer[BLOCK_SIZE];
     check(get_block(0, buffer) == 0, SFS_ERR_BLOCK_IO);
     freeBlocks[0] = false;
 
@@ -178,17 +213,17 @@ int sfs_initialize(int erase) {
         header.maxFiles = MAX_FILES;
         header.maxPathComponentLength = MAX_PATH_COMPONENT_LENGTH;
 
-        memset(buffer, 0, BLOCK_SIZE);
+        memset(buffer, 0, sizeof(buffer));
         memcpy(buffer, &header, sizeof(FileSystemHeader));
         check(put_block(0, buffer) == 0, SFS_ERR_BLOCK_IO);
 
-        memset(buffer, 0, BLOCK_SIZE);
+        memset(buffer, 0, sizeof(buffer));
         memcpy(buffer, root, sizeof(File));
         check(put_block(1, buffer) == 0, SFS_ERR_BLOCK_IO);
 
         // c. If erase is 1, overwrite all the other blocks with a buffer filled with zeros.
         if (erase) {
-            memset(buffer, 0, BLOCK_SIZE);
+            memset(buffer, 0, sizeof(buffer));
 
             for (int i = 2; i < MAX_BLOCKS; i++) {
                 check(put_block(i, buffer) == 0, SFS_ERR_BLOCK_IO);
@@ -198,10 +233,10 @@ int sfs_initialize(int erase) {
         // Initialize all the other files.
         for (int i = 1; i < MAX_FILES; i++) {
             File *file = &files[i];
-            memset(file, 0, sizeof(File));
+            memset(file, 0, sizeof(*file));
             file->parentDirectoryID = -1;
             file->type = FTYPE_NONE;
-            check_err(File_save(file) == 0);
+            check_err(File_save(file));
         }
 
         // TODO: This should be removed once `sfs_create` is implemented.

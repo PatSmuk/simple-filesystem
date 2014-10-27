@@ -41,7 +41,7 @@ static int diskfd = -1;
 *************************************************/
 static int init_disk()
 {
-  char garbage;
+  char garbage = '\0';
 
   if ((diskfd = open(DISKFILE,O_RDWR|O_CREAT,DISKFILEMODE)) < 0) {
     perror("opening disk data file");

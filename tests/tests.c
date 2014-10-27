@@ -90,16 +90,22 @@ CHEAT_TEST(path_to_tokens,
         // "/" should result in [].
         cheat_assert(path_to_tokens("/", &tokens) == 0);
         cheat_assert(tokens[0] == NULL);
+        free(tokens);
 
         // "/foo" should result in ["foo"].
         cheat_assert(path_to_tokens("/foo", &tokens) == 0);
         cheat_assert(strncmp(tokens[0], "foo", sizeof("foo")) == 0);
         cheat_assert(tokens[1] == NULL);
+        free(tokens[0]);
+        free(tokens);
 
         // "/foo/bar" should result in ["foo", "bar"].
         cheat_assert(path_to_tokens("/foo/bar", &tokens) == 0);
         cheat_assert(strncmp(tokens[0], "foo", sizeof("foo")) == 0);
         cheat_assert(strncmp(tokens[1], "bar", sizeof("bar")) == 0);
+        free(tokens[0]);
+        free(tokens[1]);
+        free(tokens);
 
         // A path that ends with a '/' should fail.
         cheat_assert(path_to_tokens("/foo/", &tokens) == SFS_ERR_INVALID_PATH);
@@ -115,6 +121,8 @@ CHEAT_TEST(path_to_tokens,
         buffer[MAX_PATH_COMPONENT_LENGTH+1] = '\0';
         cheat_assert(path_to_tokens(buffer, &tokens) == 0);
         cheat_assert(strncmp(tokens[0], buffer+1, MAX_PATH_COMPONENT_LENGTH) == 0);
+        free(tokens[0]);
+        free(tokens);
 )
 
 CHEAT_TEST(sfs_initialize,
@@ -279,8 +287,8 @@ CHEAT_SKIP(sfs_read,
 CHEAT_SKIP(sfs_write,
         char buffer[BLOCK_SIZE];
         char referenceBuffer[BLOCK_SIZE];
-        memset(buffer, 'A', BLOCK_SIZE);
-        memset(referenceBuffer, 'A', BLOCK_SIZE);
+        memset(buffer, 'A', sizeof(buffer));
+        memset(referenceBuffer, 'A', sizeof(referenceBuffer));
 
         // Writing to a directory should fail.
         cheat_assert(sfs_write(root_fd, -1, 1, buffer) == SFS_ERR_BAD_FILE_TYPE);

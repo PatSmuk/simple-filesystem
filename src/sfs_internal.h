@@ -237,6 +237,9 @@ extern OpenFile openFiles[MAX_OPEN_FILES];
 // `freeBlocks[block]` is true if `block` is unused, otherwise false.
 extern bool freeBlocks[MAX_BLOCKS];
 
+// If false, the file system has not been initialized, so no memory clean-up is necessary.
+extern bool initialized;
+
 
 // Finds an empty File object, or NULL if they are all in use. 
 File * File_find_empty();
