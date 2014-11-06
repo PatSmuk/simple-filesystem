@@ -227,67 +227,125 @@ typedef struct {
 } OpenFile;
 
 
-// ALl the File objects, pre-allocated.
+// ALl the `File` objects, pre-allocated.
 extern File files[MAX_FILES];
 
-// All the OpenFile objects, pre-allocated.
+// All the `OpenFile` objects, pre-allocated.
 extern OpenFile openFiles[MAX_OPEN_FILES];
 
 // Keeps track of which blocks are unused.
 // `freeBlocks[block]` is true if `block` is unused, otherwise false.
 extern bool freeBlocks[MAX_BLOCKS];
 
-// If false, the file system has not been initialized, so no memory clean-up is necessary.
+// If `false`, the file system has not been initialized, so no memory clean-up is necessary.
 extern bool initialized;
 
 
-// Finds an empty File object, or NULL if they are all in use. 
+/*
+ * Finds an empty `File` object.
+ *
+ * Returns the `File` or `NULL` if they are all in use.
+ */
 File * File_find_empty();
 
-// Finds a File by its absolute path, or NULL if it does not exist.
-// Returns 0 on success, error code on failure.
+
+/*
+ * Finds a `File` by its absolute path, or NULL if it does not exist.
+ *
+ * Possible errors:
+ *  - SFS_ERR_OUT_OF_MEMORY
+ *  - SFS_ERR_INVALID_PATH
+ *  - SFS_ERR_INVALID_NAME
+ *  - SFS_ERR_FILE_NOT_FOUND
+ *  - SFS_ERR_BAD_FILE_TYPE (if one of of the files in the middle is a data file)
+ */
 int File_find_by_path(File **file, const char *path);
 
-// Finds the File that the descriptor has open, or NULL if that descriptor is invalid.
+
+/*
+ * Finds the `File` that the descriptor has open.
+ *
+ * Return the `File` or `NULL` if that descriptor is invalid.
+ */
 File * File_find_by_descriptor(int descriptor);
 
-// Finds the File in `directory` that is named `name`, or NULL if it does not exist.
+
+/*
+ * Finds the File in `directory` that is named `name`.
+ *
+ * Returns the `File` or `NULL` if it does not exist.
+ */
 File * File_find_in_dir(const char *name, const File *directory);
 
-// Gets the File's parent (i.e. the directory it's contained within),
-//   or NULL if `file` is the root directory.
+
+/*
+ * Gets the File's parent (i.e. the directory it's contained within).
+ *
+ * Returns the `File` or `NULL` if `file` is the root directory.
+ */
 File * File_get_parent(const File *file);
 
-// Get the ID of a File based on its address.
-#define File_get_id(file) (FileID)(((void*)(file) - (void*)files) / sizeof(File))
 
-// Saves the File to the disk.
-// Returns 0 on success, error code on failure.
+/*
+ * Get the ID of a File based on its address.
+ */
+#define File_get_id(file) (FileID)(((File*)(file)) - files)
+
+
+/*
+ * Saves the File to the disk.
+ *
+ * Possible errors:
+ *  - SFS_ERR_BLOCK_IO
+ */
 int File_save(const File *file);
+
 
 /*
  * Adds `file` to `directory's` list of contents.
  *
- * Returns 0 on success, error code on failure (out of memory).
+ * Possible errors:
+ *  - SFS_ERR_OUT_OF_MEMORY
  */
 int File_add_file_to_dir(File *file, File *directory);
 
-// Removes `file` from `directory's` list of contents.
+
+/*
+ * Removes `file` from `directory's` list of contents.
+ *
+ * Only removes the file from the directory in-memory.
+ * To remove it from the directory on-disk, the file's parent directory ID should be set to -1 and saved.
+ */
 void File_remove_file_from_dir(const File *file, File *directory);
 
 
-// Returns 1 if `file` is a data file, otherwise 0.
+/*
+ * Returns `true` if `file` is a data file, otherwise `false`.
+ */
 #define File_is_data(file) (bool)((file)->type == FTYPE_DATA)
 
-// Returns 1 if `file` is a directory, otherwise 0.
+
+/*
+ * Returns `true` if `file` is a directory, otherwise `false`.
+ */
 #define File_is_directory(file) (bool)((file)->type == FTYPE_DIR)
 
 
-// Find an empty OpenFile object, or NULL if they are all in use.
-OpenFile * OpenFile_find_empty();
+/*
+ * Find an empty OpenFile object.
+ *
+ * Returns the OpenFile or `NULL` if they are all in use.
+ */
+OpenFile *OpenFile_find_empty();
 
-// Finds an OpenFile by descriptor, or NULL if the descriptor is invalid.
-OpenFile * OpenFile_find_by_descriptor(int descriptor);
+
+/*
+ * Finds an OpenFile by descriptor.
+ *
+ * Returns the OpenFile or `NULL` if the descriptor is invalid (out of range or not opened).
+ */
+OpenFile *OpenFile_find_by_descriptor(int descriptor);
+
 
 /*
  * Finds all OpenFiles for `file` and make them into an NULL-terminated array,
@@ -295,7 +353,8 @@ OpenFile * OpenFile_find_by_descriptor(int descriptor);
  *
  * The array must be freed by the caller.
  *
- * Return 0 on success, error code on failure (out of memory).
+ * Possible errors:
+ *  - SFS_ERR_OUT_OF_MEMORY
  */
 int OpenFile_find_by_file(const File *file, OpenFile ***openFilesArray);
 
@@ -307,9 +366,13 @@ int OpenFile_find_by_file(const File *file, OpenFile ***openFilesArray);
  *
  * Each token and the list must be freed by the caller.
  *
- * Returns 0 on success, error code on failure.
+ * Possible errors:
+ *  - SFS_ERR_OUT_OF_MEMORY
+ *  - SFS_ERR_INVALID_PATH
+ *  - SFS_ERR_INVALID_NAME
  */
 int path_to_tokens(const char *path, char ***tokens);
+
 
 /*
  * Calculates the BlockID of the block that File `file_id` is stored in.
@@ -320,6 +383,7 @@ int path_to_tokens(const char *path, char ***tokens);
  *   4 + 1 = 5      The fourth File block is BlockID 5.
  */
 #define FileID_to_BlockID(file_id) (BlockID)((file_id) / (BLOCK_SIZE/sizeof(File)) + 1)
+
 
 /*
  * Calculates the offset to the File's data inside the block where File `file_id` is stored.

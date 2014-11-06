@@ -1,3 +1,6 @@
+#ifndef __BLOCKIO_H__
+#define __BLOCKIO_H__
+
 /*
  * This file was provided as part of the project's requirements.
  *
@@ -32,3 +35,5 @@ int get_block(int blknum, char *buf);
 *    - Returns 0 if successful, -1 otherwise
 *************************************************/
 int put_block(int blknum, char *buf);
+
+#endif

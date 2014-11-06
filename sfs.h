@@ -241,6 +241,7 @@ int sfs_gettype(char *pathname);
  * A new file system should consist of a single, empty root directory and no other directories or regular files.
  *
  * Possible errors:
+ *  - SFS_ERR_OUT_OF_MEMORY
  *  - SFS_ERR_BLOCK_IO
  *  - SFS_ERR_INVALID_DATA_FILE
  */

@@ -70,6 +70,7 @@ int File_find_by_path(File **_file, const char *path) {
             file = next;
         }
         else {
+            check(File_is_directory(next), SFS_ERR_BAD_FILE_TYPE);
             directory = next;
         }
     }

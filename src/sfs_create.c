@@ -29,7 +29,7 @@ int sfs_create(char *pathname, int type) {
     FileID parentID;
     err_code = (File_find_by_path(&file, pathname));
     //check if file is null
-    check_err(err_code == SFS_ERR_FILE_NOT_FOUND);
+    check(err_code == SFS_ERR_FILE_NOT_FOUND, err_code ? err_code : SFS_ERR_NAME_TAKEN);
 
     file = File_find_empty();
 

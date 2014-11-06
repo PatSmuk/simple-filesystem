@@ -33,6 +33,6 @@ int sfs_close(int fd) {
 
     return 0;
 
-    error:
+error:
     return err_code;
 }

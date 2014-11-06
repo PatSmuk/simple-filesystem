@@ -23,6 +23,7 @@
 #include "cheat.h"
 #include "../sfs.h"
 #include "../src/sfs_internal.h"
+#include "../src/blockio.h"
 
 #ifndef TEST_FILE_NAME
 #define TEST_FILE_NAME "test"
@@ -39,25 +40,46 @@ CHEAT_SET_UP(
         // Create a brand new file system.
         sfs_initialize(1);
 
-        //root_fd = sfs_open("/");
-        root_fd = 0; // Hard-coded as 0 until `sfs_open` is implemented.
+        // Create the test file.
+        File *testFile = File_find_empty(),
+            *root = &files[0];
 
-        // Create a new file.
-        /* TODO: Uncomment once `sfs_create` is implemented.
-        sfs_create(TEST_FILE_PATH, 0);
-        */
+        strcpy(testFile->name, "test");
+        testFile->type = FTYPE_DATA;
+        for (int i = 0; i < MAX_BLOCKS_PER_FILE; i++) {
+            testFile->blocks[i] = -1;
+        }
 
-        // Write some random data to the file.
-        char random[] = TEST_FILE_DATA;
-        /* TODO: Uncomment once `sfs_open` is implemented.
-        test_fd = sfs_open(TEST_FILE_PATH);
-        */
-        test_fd = 1; // Hard-coded as 1 until `sfs_open` is implemented.
-        sfs_write(test_fd, -1, (int)strlen(random), random);
-)
+        // Add the test file to the root directory.
+        // This memory will be freed by the clean-up routine at exit.
+        FileNode *node = malloc(sizeof(FileNode));
 
-CHEAT_TEAR_DOWN(
-        sfs_close(test_fd);
+        node->file = testFile;
+        node->next = NULL;
+        node->prev = NULL;
+        root->dirContents = node;
+        root->size += 1;
+        testFile->parentDirectoryID = 0;
+
+        // Open the root directory and test files as FDs 0 and 1 respectively.
+        OpenFile *rootOpenFile = &openFiles[0],
+        *testOpenFile = &openFiles[1];
+
+        rootOpenFile->file = root;
+        rootOpenFile->lastRead = NULL;
+        testOpenFile->file = testFile;
+
+        // Write some data to the test file.
+        char buffer[BLOCK_SIZE];
+        memset(buffer, 0, sizeof(buffer));
+        strcpy(buffer, TEST_FILE_DATA);
+
+        put_block(MAX_BLOCKS-1, buffer);
+        testFile->blocks[0] = MAX_BLOCKS-1;
+        testFile->size = sizeof(TEST_FILE_DATA);
+
+        root_fd = 0;
+        test_fd = 1;
 )
 
 CHEAT_TEST(File_find_by_path,
@@ -94,15 +116,15 @@ CHEAT_TEST(path_to_tokens,
 
         // "/foo" should result in ["foo"].
         cheat_assert(path_to_tokens("/foo", &tokens) == 0);
-        cheat_assert(strncmp(tokens[0], "foo", sizeof("foo")) == 0);
+        cheat_assert(strcmp(tokens[0], "foo") == 0);
         cheat_assert(tokens[1] == NULL);
         free(tokens[0]);
         free(tokens);
 
         // "/foo/bar" should result in ["foo", "bar"].
         cheat_assert(path_to_tokens("/foo/bar", &tokens) == 0);
-        cheat_assert(strncmp(tokens[0], "foo", sizeof("foo")) == 0);
-        cheat_assert(strncmp(tokens[1], "bar", sizeof("bar")) == 0);
+        cheat_assert(strcmp(tokens[0], "foo") == 0);
+        cheat_assert(strcmp(tokens[1], "bar") == 0);
         free(tokens[0]);
         free(tokens[1]);
         free(tokens);
@@ -111,7 +133,7 @@ CHEAT_TEST(path_to_tokens,
         cheat_assert(path_to_tokens("/foo/", &tokens) == SFS_ERR_INVALID_PATH);
 
         // A path with a token that's length is > MAX_PATH_COMPONENT_LENGTH should fail.
-        char buffer[MAX_PATH_COMPONENT_LENGTH+3];
+        char buffer[1+MAX_PATH_COMPONENT_LENGTH+1+1];
         buffer[0] = '/';
         buffer[MAX_PATH_COMPONENT_LENGTH+2] = '\0';
         memset(buffer+1, 'A', MAX_PATH_COMPONENT_LENGTH+1);
@@ -131,7 +153,7 @@ CHEAT_TEST(sfs_initialize,
 
         // Root file should be created with initialize.
         cheat_assert(files[0].type == FTYPE_DIR);
-        cheat_assert(strncmp(files[0].name, "/", sizeof("/")) == 0);
+        cheat_assert(strcmp(files[0].name, "/") == 0);
 )
 
 CHEAT_TEST(sfs_getsize,
@@ -200,7 +222,7 @@ CHEAT_TEST(sfs_close,
         cheat_assert(sfs_close(test_fd) == SFS_ERR_BAD_FD);
 )
 
-CHEAT_SKIP(sfs_create,
+CHEAT_TEST(sfs_create,
         // Create a new file by appending 2 to TEST_FILE_NAME, this should succeed.
         cheat_assert(sfs_create(TEST_FILE_PATH "2", 0) == 0);
 
@@ -214,15 +236,13 @@ CHEAT_SKIP(sfs_create,
         cheat_assert(sfs_create(TEST_FILE_PATH, 0) == SFS_ERR_NAME_TAKEN);
 )
 
-CHEAT_SKIP(sfs_delete,
+CHEAT_TEST(sfs_delete,
         // Deleting a file that doesn't exist should fail.
         cheat_assert(sfs_delete(TEST_FILE_PATH "2") == SFS_ERR_FILE_NOT_FOUND);
 
         // Deleting the root directory should always fail.
         cheat_assert(sfs_delete("/") == SFS_ERR_INVALID_NAME);
 
-        /* TODO: Uncomment these once `sfs_create` is implemented.
-        // Create a new directory and a file inside.
         sfs_create(TEST_FILE_PATH "2", 1);
         sfs_create(TEST_FILE_PATH "2/file", 0);
 
@@ -232,7 +252,6 @@ CHEAT_SKIP(sfs_delete,
         // Deleting the file then the directory should succeed.
         cheat_assert(sfs_delete(TEST_FILE_PATH "2/file") == 0);
         cheat_assert(sfs_delete(TEST_FILE_PATH "2") == 0);
-        */
 )
 
 CHEAT_SKIP(sfs_read,

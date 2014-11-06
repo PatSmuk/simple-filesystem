@@ -238,40 +238,6 @@ int sfs_initialize(int erase) {
             file->type = FTYPE_NONE;
             check_err(File_save(file));
         }
-
-        // TODO: This should be removed once `sfs_create` is implemented.
-        // Add a test file to the file system and create FDs for the test file and root directory.
-        {
-            // Create the test file.
-            File *testFile = File_find_empty();
-            check(testFile != NULL, SFS_ERR_FILE_SYSTEM_FULL);
-            check(testFile->type == FTYPE_NONE, SFS_ERR_BAD_FILE_TYPE);
-
-            strcpy(testFile->name, "test");
-            testFile->type = FTYPE_DATA;
-            for (int i = 0; i < MAX_BLOCKS_PER_FILE; i++) {
-                testFile->blocks[i] = -1;
-            }
-
-            // Add the test file to the root directory.
-            FileNode *node = malloc(sizeof(FileNode));
-            check_mem(node);
-
-            node->file = testFile;
-            node->next = NULL;
-            node->prev = NULL;
-            root->dirContents = node;
-            root->size += 1;
-            testFile->parentDirectoryID = 0;
-
-            // Open the root directory and test files as FDs 0 and 1 respectively.
-            OpenFile *rootOpenFile = &openFiles[0],
-                    *testOpenFile = &openFiles[1];
-
-            check(rootOpenFile->file == NULL && testOpenFile->file == NULL, SFS_ERR_BAD_FD);
-            rootOpenFile->file = root;
-            testOpenFile->file = testFile;
-        }
     }
 
     return 0;
