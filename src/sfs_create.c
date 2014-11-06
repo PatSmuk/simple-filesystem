@@ -45,6 +45,7 @@ int sfs_create(char *pathname, int type) {
     parentID = File_get_id(pFile);
     file->type = type == 0 ? FTYPE_DATA : FTYPE_DIR;
     file->parentDirectoryID = parentID;
+    strcpy(file->name,tokens[i]);
 
     if (File_is_data(file))
     {

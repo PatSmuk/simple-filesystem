@@ -125,7 +125,7 @@ File * File_find_in_dir(const char *name, const File *directory) {
 File * File_get_parent(const File *file) {
 
     if (file->parentDirectoryID >= 0) {
-        return File_find_by_descriptor(file->parentDirectoryID);
+        return files + file->parentDirectoryID;
     }
 
     return NULL;
