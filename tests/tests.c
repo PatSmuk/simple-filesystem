@@ -176,7 +176,7 @@ CHEAT_TEST(sfs_readdir,
         cheat_assert(sfs_readdir(MAX_OPEN_FILES, nameBuffer) == SFS_ERR_BAD_FD);
 )
 
-CHEAT_SKIP(sfs_open,
+CHEAT_TEST(sfs_open,
         // Opening the test file should succeed.
         int fd1 = sfs_open(TEST_FILE_PATH);
         cheat_assert(fd1 >= 0);
@@ -192,7 +192,7 @@ CHEAT_SKIP(sfs_open,
         cheat_assert(sfs_open(TEST_FILE_PATH "2") == SFS_ERR_FILE_NOT_FOUND);
 )
 
-CHEAT_SKIP(sfs_close,
+CHEAT_TEST(sfs_close,
         // Closing the file should succeed.
         cheat_assert(sfs_close(test_fd) == 0);
 

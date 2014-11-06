@@ -77,6 +77,9 @@ enum {
 
     // The filesystem is full, no more files can be created.
     SFS_ERR_FILE_SYSTEM_FULL,
+
+    // Too many files are currently open
+    SFS_ERR_TOO_MANY_OPEN,
 };
 
 /*
@@ -108,6 +111,7 @@ int sfs_open(char *pathname);
  *  - SFS_ERR_BLOCK_FAULT (when `start` and `start+length` are on different blocks)
  *  - SFS_ERR_NOT_ENOUGH_DATA
  *  - SFS_ERR_INVALID_START_LOC (when `start` is negative)
+ *  - SFS_TOO_MANY_FILES_OPEN
  */
 int sfs_read(int fd, int start, int length, char *mem_pointer);
 

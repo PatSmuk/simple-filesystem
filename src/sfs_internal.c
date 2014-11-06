@@ -257,7 +257,12 @@ OpenFile * OpenFile_find_by_descriptor(int descriptor) {
         return NULL;
     }
 
-    return &openFiles[descriptor];
+    OpenFile *openFile = &openFiles[descriptor];
+    if (openFile->file == NULL) {
+        return NULL;
+    }
+
+    return openFile;
 }
 
 

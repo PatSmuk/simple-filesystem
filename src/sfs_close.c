@@ -21,5 +21,18 @@
 #include "sfs_internal.h"
 
 int sfs_close(int fd) {
+
+    int err_code;
+    OpenFile *oFile;
+
+    oFile = OpenFile_find_by_descriptor(fd);
+    check(oFile != NULL, SFS_ERR_BAD_FD);
+
+    oFile->lastRead = NULL;
+    oFile->file = NULL;
+
     return 0;
+
+    error:
+    return err_code;
 }

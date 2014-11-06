@@ -20,6 +20,23 @@
 #include "dbg.h"
 #include "sfs_internal.h"
 
+
 int sfs_open(char *pathname) {
-    return 0;
+
+    int err_code;
+    File *file;
+
+    check_err(File_find_by_path(&file, pathname));
+
+    OpenFile *openFile = OpenFile_find_empty();
+     check(openFile != NULL, SFS_ERR_TOO_MANY_OPEN);
+
+    openFile->file = file;
+    openFile->lastRead = NULL;
+
+    return (int)(openFile - openFiles);
+
+error:
+    return err_code;
+
 }
