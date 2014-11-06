@@ -80,6 +80,9 @@ enum {
 
     // Too many files are currently open
     SFS_ERR_TOO_MANY_OPEN,
+
+    //There are no more empty blocks to write to.
+    SFS_ERR_NO_MORE_BLOCKS,
 };
 
 /*
@@ -111,7 +114,6 @@ int sfs_open(char *pathname);
  *  - SFS_ERR_BLOCK_FAULT (when `start` and `start+length` are on different blocks)
  *  - SFS_ERR_NOT_ENOUGH_DATA
  *  - SFS_ERR_INVALID_START_LOC (when `start` is negative)
- *  - SFS_TOO_MANY_FILES_OPEN
  */
 int sfs_read(int fd, int start, int length, char *mem_pointer);
 
@@ -241,7 +243,6 @@ int sfs_gettype(char *pathname);
  * A new file system should consist of a single, empty root directory and no other directories or regular files.
  *
  * Possible errors:
- *  - SFS_ERR_OUT_OF_MEMORY
  *  - SFS_ERR_BLOCK_IO
  *  - SFS_ERR_INVALID_DATA_FILE
  */

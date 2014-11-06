@@ -254,7 +254,7 @@ CHEAT_TEST(sfs_delete,
         cheat_assert(sfs_delete(TEST_FILE_PATH "2") == 0);
 )
 
-CHEAT_SKIP(sfs_read,
+CHEAT_TEST(sfs_read,
         char buffer[BLOCK_SIZE];
         char referenceBuffer[BLOCK_SIZE];
 
@@ -267,11 +267,14 @@ CHEAT_SKIP(sfs_read,
         // Reading from the data file should succeed.
         cheat_assert(sfs_read(test_fd, 0, (int)sizeof(TEST_FILE_DATA), buffer) == 0);
 
+        // Ensure that the correct data was written to the buffer.
+        cheat_assert(cheat_compare(buffer, TEST_FILE_DATA));
+
         // Reading past the end of the data file should fail.
         cheat_assert(sfs_read(test_fd, 0, (int)sizeof(TEST_FILE_DATA)+1, buffer) == SFS_ERR_NOT_ENOUGH_DATA);
 
-        // Ensure that the correct data was written to the buffer.
-        cheat_assert(cheat_compare(buffer, TEST_FILE_DATA));
+
+
 
         // Reading from a non-existent file should fail.
         cheat_assert(sfs_read(MAX_OPEN_FILES, 0, 1, buffer) == SFS_ERR_BAD_FD);
@@ -303,7 +306,7 @@ CHEAT_SKIP(sfs_read,
         */
 )
 
-CHEAT_SKIP(sfs_write,
+CHEAT_TEST(sfs_write,
         char buffer[BLOCK_SIZE];
         char referenceBuffer[BLOCK_SIZE];
         memset(buffer, 'A', sizeof(buffer));
