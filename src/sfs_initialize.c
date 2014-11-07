@@ -204,6 +204,7 @@ int sfs_initialize(int erase) {
         root->size = 0;
         root->dirContents = NULL;
         root->parentDirectoryID = -1;
+        File_save(root);
 
         // b. Save the header to block 0 and the root directory to block 1.
         strcpy(header.magicCode1, MAGIC_CODE_1);

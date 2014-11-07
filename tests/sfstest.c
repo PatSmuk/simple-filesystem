@@ -31,43 +31,7 @@
    templates for the sfs interface functions
 ******************************************************/
 
-int
-sfs_open(char *pathname);
-
-int
-sfs_read(int fd,
-	 int start,
-	 int length,
-	 char *mem_pointer);
-
-int
-sfs_write(int fd,
-	  int start,
-	  int length,
-	  char *mem_pointer);
-
-int
-sfs_readdir(int fd,
-	    char *mem_pointer);
-
-int
-sfs_close(int fd);
-
-int
-sfs_delete(char *pathname);
-
-int
-sfs_create(char *pathname,
-	   int type);
-
-int
-sfs_getsize(char *pathname);
-
-int
-sfs_gettype(char *pathname);
-
-int
-sfs_initialize(int erase);
+#include "../sfs.h"
 
 
 
@@ -116,6 +80,7 @@ main()
 {
   int i;
   int retval;  /* used to hold return values of file system calls */
+    sfs_initialize(0);
 
   /* do forever:
      1) print a list of available commands
@@ -164,7 +129,7 @@ main()
       printf("Enter number of bytes to read: ");
       scanf("%d",&p3);
       retval = sfs_read(p1,p2,p3,io_buffer);
-      if (retval > 0) {
+      if (retval == 0) {
 	printf("Read succeeded.\n");
 	printf("The following data was read (only printable ASCII will display)\n");
 	for(i=0;i<p3;i++) {
@@ -189,7 +154,7 @@ main()
       printf("Enter %d characters to be written: ",p3);
       scanf(IO_BUF_FORMAT,io_buffer);
       retval = sfs_write(p1,p2,p3,io_buffer);
-      if (retval > 0) {
+      if (retval == 0) {
 	printf("Write succeeded.\n");
 	printf("Wrote %s to the disk\n",io_buffer);
       }
@@ -219,7 +184,7 @@ main()
       printf("Enter file descriptor number: ");
       scanf("%d",&p1);
       retval = sfs_close(p1);
-      if (retval > 0) {
+      if (retval == 0) {
 	printf("sfs_close succeeded.\n");
       }
       else {
@@ -233,7 +198,7 @@ main()
       printf("Enter 0 for regular file, 1 for directory: ");
       scanf("%d",&p1);
       retval = sfs_create(data_buffer_1,p1);
-      if (retval > 0) {
+      if (retval == 0) {
 	printf("sfs_create succeeded.\n");
       }
       else {
@@ -291,7 +256,7 @@ main()
       printf("Enter 1 to erase disk while initializing, 0 otherwise: ");
       scanf("%d",&p1);
       retval = sfs_initialize(p1);
-      if (retval > 0) {
+      if (retval == 0) {
 	printf("sfs_initialize succeeded.\n");
       }
       else {

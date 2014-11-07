@@ -235,6 +235,14 @@ void File_remove_file_from_dir(const File *file, File *directory) {
 
     // Free it to prevent a memory leak.
     free(node);
+
+    // Invalidate any last read references.
+    for (int i = 0; i < MAX_OPEN_FILES; i++) {
+        OpenFile *openFile = &openFiles[i];
+        if (openFile->file == directory) {
+            openFile->lastRead = NULL;
+        }
+    }
 }
 
 
