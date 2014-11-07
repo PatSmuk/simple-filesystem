@@ -68,13 +68,14 @@ int sfs_initialize(int erase) {
         check(BLOCK_SIZE >= sizeof(File), SFS_ERR_BLOCKS_TOO_SMALL_FOR_FILE);
     }
 
-    // Free directory list memory at exit.
-    atexit(free_directory_lists);
-
     // If initialize is called twice, memory could be leaked.
     // This will clean up any FileNodes that already exist.
     if (initialized) {
         free_directory_lists();
+    }
+    else {
+        // Free directory list memory at exit.
+        atexit(free_directory_lists);
     }
     initialized = true;
 
