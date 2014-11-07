@@ -186,6 +186,7 @@ int File_add_file_to_dir(File *file, File *directory) {
         newNode->prev = lastNode;
     }
 
+    directory->size++;
     return 0;
 
 error:
@@ -243,6 +244,8 @@ void File_remove_file_from_dir(const File *file, File *directory) {
             openFile->lastRead = NULL;
         }
     }
+
+    directory->size--;
 }
 
 

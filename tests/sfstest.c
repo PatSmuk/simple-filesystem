@@ -76,11 +76,14 @@ int p1,p2,p3;
    main test routine
 ******************************************************/
 
-main()
+int main()
 {
   int i;
-  int retval;  /* used to hold return values of file system calls */
-    sfs_initialize(0);
+  int retval = sfs_initialize(0);
+    if (retval != 0) {
+        printf("Error: %s\n", sfs_error_message(retval));
+        return 1;
+    }
 
   /* do forever:
      1) print a list of available commands
@@ -117,7 +120,7 @@ main()
 	printf("Open succeeded.  File Descriptor number is %d\n",retval);
       }
       else {
-	printf("Error.  Return value was %d\n",retval);
+	printf("Error: %s\n", sfs_error_message(retval));
       }
       break;
     case 'r':
@@ -138,7 +141,7 @@ main()
 	printf("\n");
       }
       else {
-	printf("Error.  Return value was %d\n",retval);
+          printf("Error: %s\n", sfs_error_message(retval));
       }
       break;
     case 'w':
@@ -159,7 +162,7 @@ main()
 	printf("Wrote %s to the disk\n",io_buffer);
       }
       else {
-	printf("Error.  Return value was %d\n",retval);
+          printf("Error: %s\n", sfs_error_message(retval));
       }
       break;
     case 'R':
@@ -176,7 +179,7 @@ main()
 	printf("No more entries in this directory\n");
       }
       else {
-	printf("Error.  Return value was %d\n",retval);
+          printf("Error: %s\n", sfs_error_message(retval));
       }
       break;
     case 'c':
@@ -188,7 +191,7 @@ main()
 	printf("sfs_close succeeded.\n");
       }
       else {
-	printf("Error.  Return value was %d\n",retval);
+          printf("Error: %s\n", sfs_error_message(retval));
       }
       break;
     case 'm':
@@ -202,7 +205,7 @@ main()
 	printf("sfs_create succeeded.\n");
       }
       else {
-	printf("Error.  Return value was %d\n",retval);
+          printf("Error: %s\n", sfs_error_message(retval));
       }
       break;
     case 'd':
@@ -214,7 +217,7 @@ main()
 	printf("sfs_delete succeeded.\n");
       }
       else {
-	printf("Error.  Return value was %d\n",retval);
+          printf("Error: %s\n", sfs_error_message(retval));
       }
       break;
     case 's':
@@ -227,7 +230,7 @@ main()
 	printf("size = %d\n",retval);
       }
       else {
-	printf("Error.  Return value was %d\n",retval);
+          printf("Error: %s\n", sfs_error_message(retval));
       }
       break;
     case 't':
@@ -248,7 +251,7 @@ main()
 	}
       }
       else {
-	printf("Error.  Return value was %d\n",retval);
+          printf("Error: %s\n", sfs_error_message(retval));
       }
       break;
     case 'i':
@@ -260,7 +263,7 @@ main()
 	printf("sfs_initialize succeeded.\n");
       }
       else {
-	printf("Error.  Return value was %d\n",retval);
+          printf("Error: %s\n", sfs_error_message(retval));
       }
       break;
     case 'q':
@@ -274,5 +277,6 @@ main()
     /* cleanup the newline that remains after reading command parameter(s) */
     gets(command_buffer);
   }
+    return 0;
 }
       

@@ -33,14 +33,11 @@ int sfs_read(int fd, int start, int length, char *mem_pointer) {
     check (start>=0,SFS_ERR_INVALID_START_LOC);
     int tempVar = start/BLOCK_SIZE;
     check ((tempVar ) == ((start + length - 1) / BLOCK_SIZE), SFS_ERR_BLOCK_FAULT);
-// 3.
+
     check (start + length <= file->size, SFS_ERR_NOT_ENOUGH_DATA);
-// 4.
+
     int index = file->blocks[start / BLOCK_SIZE];
-// 5.
-    //check(index>=0,S)
-    //BlockID block = (short)get_block(index, mem_pointer);
-// 6.
+
     char boofer[BLOCK_SIZE];
     check(get_block(index,boofer) == 0, SFS_ERR_BLOCK_IO);
     memcpy(mem_pointer, boofer + (start % BLOCK_SIZE), (size_t )length);

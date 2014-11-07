@@ -22,7 +22,7 @@
 
 int sfs_create(char *pathname, int type) {
     int err_code;
-    char **tokens;
+    char **tokens = NULL;
     File *file = NULL;
     File *pFile = &files[0];
     int i;
@@ -30,11 +30,15 @@ int sfs_create(char *pathname, int type) {
     err_code = (File_find_by_path(&file, pathname));
     //check if file is null
     check(err_code == SFS_ERR_FILE_NOT_FOUND, err_code ? err_code : SFS_ERR_NAME_TAKEN);
+    // Make sure `type` is either 0 or 1.
+    check(type == 0 || type == 1, SFS_ERR_INVALID_TYPE);
 
     file = File_find_empty();
+    check(file != NULL, SFS_ERR_FILE_SYSTEM_FULL);
 
     check_err(path_to_tokens(pathname, &tokens));
-    char parentPath[MAX_FILES * MAX_PATH_COMPONENT_LENGTH] = "";
+    // Reserve enough space for the worst-case scenario.
+    char parentPath[MAX_FILES * (MAX_PATH_COMPONENT_LENGTH+1)] = "";
     for (i = 0; tokens[i+1] != NULL; i++) {
         strcat(parentPath, "/");
         strcat(parentPath, tokens[i]);
@@ -56,9 +60,21 @@ int sfs_create(char *pathname, int type) {
     }
     check_err(File_add_file_to_dir(file, pFile));
 
-    File_save(file);
+    check_err(File_save(file));
+    if (tokens) {
+        for (i = 0; tokens[i] != NULL; i++) {
+            free(tokens[i]);
+        }
+        free(tokens);
+    }
     return 0;
 
 error:
+    if (tokens) {
+        for (i = 0; tokens[i] != NULL; i++) {
+            free(tokens[i]);
+        }
+        free(tokens);
+    }
     return err_code;
 }

@@ -21,7 +21,7 @@
 #include "sfs_internal.h"
 #include "blockio.h"
 
-void free_directory_lists(void) {
+static void free_directory_lists(void) {
     // For each file.
     for (int i = 0; i < MAX_FILES; i++) {
         File *file = &files[i];
@@ -35,11 +35,6 @@ void free_directory_lists(void) {
             while (node) {
                 lastNode = node;
                 node = node->next;
-
-                if (node) {
-                    node->prev = NULL;
-                }
-
                 free(lastNode);
             }
         }
@@ -52,6 +47,27 @@ int sfs_initialize(int erase) {
     char buffer[BLOCK_SIZE];
     FileSystemHeader header;
 
+    // First, check some assumptions that should hold true.
+    // These should ideally be checked at compile-time, but C compilers don't have static assertions.
+    {
+        const size_t fileSize = sizeof(File),
+            filesPerBlock = BLOCK_SIZE/fileSize;
+
+        // Compute the number of blocks needed to store all the File objects.
+        size_t fileBlocks = MAX_FILES/filesPerBlock;
+        // If there was remainder, add an extra block for them.
+        if (MAX_FILES % filesPerBlock != 0) {
+            fileBlocks++;
+        }
+
+        // All error codes should be negative.
+        check(SFS_ERR_MAX <= 0, SFS_ERR_ADJUST_ERROR_CODES);
+        // We need enough blocks to store the header and all the Files.
+        check(fileBlocks < MAX_BLOCKS-1, SFS_ERR_NOT_ENOUGH_BLOCKS_FOR_FILES);
+        // There should be enough room in a block to hold at least one File object.
+        check(BLOCK_SIZE >= sizeof(File), SFS_ERR_BLOCKS_TOO_SMALL_FOR_FILE);
+    }
+
     // Free directory list memory at exit.
     atexit(free_directory_lists);
 
@@ -63,23 +79,20 @@ int sfs_initialize(int erase) {
     initialized = true;
 
     // Mark all blocks as free at the start.
-    memset(freeBlocks, -1, sizeof(freeBlocks));
+    for (int i = 0; i < MAX_BLOCKS; i++) {
+        freeBlocks[i] = true;
+    }
 
     // 1. Load the first page (header) of the file system into a buffer.
     check(get_block(0, buffer) == 0, SFS_ERR_BLOCK_IO);
     freeBlocks[0] = false;
 
-    // 2. If the first page is not empty and erase is 0
-    unsigned int sum = 0;
-    for (int i = 0; i < BLOCK_SIZE; i++) {
-        sum += (unsigned int)buffer[i];
-    }
-
-    if (sum > 0 && !erase) {
+    // A filesystem already exists and we don't want to erase it.
+    if (buffer[0] > 0 && !erase) {
         // a. Ensure that all the header’s fields are valid.
         memcpy(&header, buffer, sizeof(header));
 
-        check(strncmp(header.magicCode1, MAGIC_CODE_1, sizeof(MAGIC_CODE_1)) == 0, SFS_ERR_INVALID_DATA_FILE);
+        check(strcmp(header.magicCode1, MAGIC_CODE_1) == 0, SFS_ERR_INVALID_DATA_FILE);
         check(header.version == SFS_DATA_VERSION, SFS_ERR_INVALID_DATA_FILE);
         check(header.fileControlBlockSize == sizeof(File), SFS_ERR_INVALID_DATA_FILE);
         check(header.blockSize == BLOCK_SIZE, SFS_ERR_INVALID_DATA_FILE);
@@ -87,7 +100,7 @@ int sfs_initialize(int erase) {
         check(header.maxFiles == MAX_FILES, SFS_ERR_INVALID_DATA_FILE);
         check(header.maxBlocksPerFile == MAX_BLOCKS_PER_FILE, SFS_ERR_INVALID_DATA_FILE);
         check(header.maxPathComponentLength == MAX_PATH_COMPONENT_LENGTH, SFS_ERR_INVALID_DATA_FILE);
-        check(strncmp(header.magicCode2, MAGIC_CODE_2, sizeof(MAGIC_CODE_2)) == 0, SFS_ERR_INVALID_DATA_FILE);
+        check(strcmp(header.magicCode2, MAGIC_CODE_2) == 0, SFS_ERR_INVALID_DATA_FILE);
 
         // b. Load all of the Files into memory from the reserved File blocks.
         BlockID currentBlock = 0;
@@ -123,6 +136,8 @@ int sfs_initialize(int erase) {
             if (parent) {
                 // Make sure the parent is a directory.
                 check(File_is_directory(parent), SFS_ERR_INVALID_DATA_FILE);
+                // Make sure the parent isn't this file.
+                check(parent != file, SFS_ERR_INVALID_DATA_FILE);
             }
             else {
                 // The only active file without a parent is the root directory.
@@ -153,8 +168,10 @@ int sfs_initialize(int erase) {
                 // 2. For each block, ensure that the block is unused and mark it at used.
                 for (int i = 0; i < MAX_BLOCKS_PER_FILE; i++) {
                     BlockID block_id = file->blocks[i];
-                    check(freeBlocks[block_id], SFS_ERR_INVALID_DATA_FILE);
-                    freeBlocks[block_id] = false;
+                    if (block_id >= 0) {
+                        check(freeBlocks[block_id], SFS_ERR_INVALID_DATA_FILE);
+                        freeBlocks[block_id] = false;
+                    }
                 }
             }
             // iv. If the File is a directory
@@ -194,7 +211,7 @@ int sfs_initialize(int erase) {
             }
         }
     }
-    // 3. Otherwise
+    // The filesystem needs to be created from scratch.
     else {
         // a. Create the root directory file as File 0.
         File *root = &files[0];
@@ -204,7 +221,7 @@ int sfs_initialize(int erase) {
         root->size = 0;
         root->dirContents = NULL;
         root->parentDirectoryID = -1;
-        File_save(root);
+        check_err(File_save(root));
 
         // b. Save the header to block 0 and the root directory to block 1.
         strcpy(header.magicCode1, MAGIC_CODE_1);

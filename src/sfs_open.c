@@ -29,7 +29,7 @@ int sfs_open(char *pathname) {
     check_err(File_find_by_path(&file, pathname));
 
     OpenFile *openFile = OpenFile_find_empty();
-     check(openFile != NULL, SFS_ERR_TOO_MANY_OPEN);
+    check(openFile != NULL, SFS_ERR_TOO_MANY_OPEN);
 
     openFile->file = file;
     openFile->lastRead = NULL;

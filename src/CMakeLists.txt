@@ -4,6 +4,7 @@ set(SOURCE_FILES
     sfs_close.c
     sfs_create.c
     sfs_delete.c
+    sfs_error_message.c
     sfs_getsize.c
     sfs_gettype.c
     sfs_initialize.c

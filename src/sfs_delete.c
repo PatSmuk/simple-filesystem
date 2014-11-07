@@ -29,7 +29,7 @@ int sfs_delete(char *pathname) {
     int i;
     char zeroBuffer[BLOCK_SIZE];
     //Code
-    check(strcmp(pathname,"/")!= 0,SFS_ERR_INVALID_NAME);
+    check(strcmp(pathname,"/")!= 0, SFS_ERR_CANT_DELETE_ROOT);
     check_err(File_find_by_path(&file,pathname));
     check_err(err_code == SFS_ERR_FILE_NOT_FOUND);
 

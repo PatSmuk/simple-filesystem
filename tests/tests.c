@@ -221,6 +221,9 @@ CHEAT_TEST(sfs_close,
 )
 
 CHEAT_TEST(sfs_create,
+        // Try to create a file with an invalid type.
+        cheat_assert(sfs_create(TEST_FILE_PATH "2", 2) == SFS_ERR_INVALID_TYPE);
+
         // Create a new file by appending 2 to TEST_FILE_NAME, this should succeed.
         cheat_assert(sfs_create(TEST_FILE_PATH "2", 0) == 0);
 
@@ -239,7 +242,7 @@ CHEAT_TEST(sfs_delete,
         cheat_assert(sfs_delete(TEST_FILE_PATH "2") == SFS_ERR_FILE_NOT_FOUND);
 
         // Deleting the root directory should always fail.
-        cheat_assert(sfs_delete("/") == SFS_ERR_INVALID_NAME);
+        cheat_assert(sfs_delete("/") == SFS_ERR_CANT_DELETE_ROOT);
 
         sfs_create(TEST_FILE_PATH "2", 1);
         sfs_create(TEST_FILE_PATH "2/file", 0);

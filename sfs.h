@@ -81,9 +81,35 @@ enum {
     // Too many files are currently open
     SFS_ERR_TOO_MANY_OPEN,
 
-    //There are no more empty blocks to write to.
+    // There are no more empty blocks to write to.
     SFS_ERR_NO_MORE_BLOCKS,
+
+    // There are too many error codes, the first one needs to be re-assignment to a more negative value.
+    SFS_ERR_ADJUST_ERROR_CODES,
+
+    // There aren't enough blocks on the device to hold all the Files' metadata.
+    SFS_ERR_NOT_ENOUGH_BLOCKS_FOR_FILES,
+
+    // The blocks are not large enough to hold a single File object.
+    SFS_ERR_BLOCKS_TOO_SMALL_FOR_FILE,
+
+    // User tried to delete the root directory, lol.
+    SFS_ERR_CANT_DELETE_ROOT,
+
+
+    // Used to make sure all errors are negative numbers.
+    // New error codes should come before it.
+    SFS_ERR_MAX
 };
+
+
+/*
+ * Get a human-readable error message for `error_code`.
+ *
+ * Returns the message, or `NULL` if `error_code` isn't a valid error code.
+ */
+const char *sfs_error_message(int error_code);
+
 
 /*
  * Open the file specified by pathname.
@@ -97,6 +123,7 @@ enum {
  *  - SFS_ERR_FILE_NOT_FOUND
  */
 int sfs_open(char *pathname);
+
 
 /*
  * Copy length bytes of data from a regular file to the memory location specified by mem_pointer.
@@ -116,6 +143,7 @@ int sfs_open(char *pathname);
  *  - SFS_ERR_INVALID_START_LOC (when `start` is negative)
  */
 int sfs_read(int fd, int start, int length, char *mem_pointer);
+
 
 /*
  * Copy length bytes of data from the memory location specified by mem_pointer to the specified file.
@@ -142,6 +170,7 @@ int sfs_read(int fd, int start, int length, char *mem_pointer);
  */
 int sfs_write(int fd, int start, int length, char *mem_pointer);
 
+
 /*
  * This call is used to read the file name components from a directory file.
  *
@@ -162,6 +191,7 @@ int sfs_write(int fd, int start, int length, char *mem_pointer);
  */
 int sfs_readdir(int fd, char *mem_pointer);
 
+
 /*
  * Indicates that the specified file descriptor is no longer needed.
  *
@@ -169,6 +199,7 @@ int sfs_readdir(int fd, char *mem_pointer);
  *  - SFS_ERR_BAD_FD
  */
 int sfs_close(int fd);
+
 
 /*
  * Delete the specified file or directory, if it exists.
@@ -182,8 +213,10 @@ int sfs_close(int fd);
  *  - SFS_ERR_FILE_NOT_FOUND
  *  - SFS_ERR_BLOCK_IO
  *  - SFS_ERR_DIR_NOT_EMPTY
+ *  - SFS_ERR_CANT_DELETE_ROOT
  */
 int sfs_delete(char *pathname);
+
 
 /*
  * If there is not already a file with name pathname, create one.
@@ -209,6 +242,7 @@ int sfs_delete(char *pathname);
  */
 int sfs_create(char *pathname, int type);
 
+
 /*
  * If the specified file is a regular file, this function should return the number of bytes in the file.
  *
@@ -219,6 +253,7 @@ int sfs_create(char *pathname, int type);
  */
 int sfs_getsize(char *pathname);
 
+
 /*
  * This function should return the value zero if the specified file is a regular file.
  *
@@ -228,6 +263,7 @@ int sfs_getsize(char *pathname);
  *  - SFS_ERR_FILE_NOT_FOUND
  */
 int sfs_gettype(char *pathname);
+
 
 /*
  * The sfs_initialize function must be called before any other file system functions are called.
