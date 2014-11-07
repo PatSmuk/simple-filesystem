@@ -42,6 +42,14 @@ int sfs_delete(char *pathname) {
     File_remove_file_from_dir(file,pFile);
     memset(zeroBuffer, 0, BLOCK_SIZE);
 
+    // Release any OpenFiles that refer to this File.
+    for (i = 0; i < MAX_OPEN_FILES; i++) {
+        OpenFile *openFile = &openFiles[i];
+        if (openFile->file == file) {
+            openFile->file = NULL;
+        }
+    }
+
     for(i = 0; i < MAX_BLOCKS_PER_FILE; i++)
     {
         if(file->blocks[i] == -1)
@@ -51,10 +59,8 @@ int sfs_delete(char *pathname) {
         put_block(file->blocks[i], zeroBuffer);
     }
 
-    memset(file,0,sizeof(file));
-
-    File_save(file);
-
+    memset(file, 0, sizeof(*file));
+    check_err(File_save(file));
 
     return 0;
 error:

@@ -62,6 +62,9 @@ int sfs_initialize(int erase) {
     }
     initialized = true;
 
+    // Mark all blocks as free at the start.
+    memset(freeBlocks, -1, sizeof(freeBlocks));
+
     // 1. Load the first page (header) of the file system into a buffer.
     check(get_block(0, buffer) == 0, SFS_ERR_BLOCK_IO);
     freeBlocks[0] = false;
@@ -74,7 +77,7 @@ int sfs_initialize(int erase) {
 
     if (sum > 0 && !erase) {
         // a. Ensure that all the header’s fields are valid.
-        memcpy(&header, buffer, sizeof(FileSystemHeader));
+        memcpy(&header, buffer, sizeof(header));
 
         check(strncmp(header.magicCode1, MAGIC_CODE_1, sizeof(MAGIC_CODE_1)) == 0, SFS_ERR_INVALID_DATA_FILE);
         check(header.version == SFS_DATA_VERSION, SFS_ERR_INVALID_DATA_FILE);
@@ -214,11 +217,11 @@ int sfs_initialize(int erase) {
         header.maxPathComponentLength = MAX_PATH_COMPONENT_LENGTH;
 
         memset(buffer, 0, sizeof(buffer));
-        memcpy(buffer, &header, sizeof(FileSystemHeader));
+        memcpy(buffer, &header, sizeof(header));
         check(put_block(0, buffer) == 0, SFS_ERR_BLOCK_IO);
 
         memset(buffer, 0, sizeof(buffer));
-        memcpy(buffer, root, sizeof(File));
+        memcpy(buffer, root, sizeof(*root));
         check(put_block(1, buffer) == 0, SFS_ERR_BLOCK_IO);
 
         // c. If erase is 1, overwrite all the other blocks with a buffer filled with zeros.
@@ -237,6 +240,7 @@ int sfs_initialize(int erase) {
             file->parentDirectoryID = -1;
             file->type = FTYPE_NONE;
             check_err(File_save(file));
+            freeBlocks[FileID_to_BlockID(i)] = false;
         }
     }
 

@@ -146,7 +146,7 @@ int File_save(const File *file) {
     check(get_block(actualBlock, buffer) == 0, SFS_ERR_BLOCK_IO);
 
     // Copy `file` into buffer at offset.
-    memcpy(buffer+offset, file, sizeof(File));
+    memcpy(buffer+offset, file, sizeof(*file));
 
     // Write back the block to block I/O.
     check(put_block(actualBlock, buffer) == 0, SFS_ERR_BLOCK_IO);

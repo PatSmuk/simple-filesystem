@@ -160,10 +160,8 @@ CHEAT_TEST(sfs_getsize,
         // The size of the root directory should be 1.
         cheat_assert(sfs_getsize("/") == 1);
 
-        /* TODO: Uncomment this once `sfs_write` is implemented.
         // The size of the data file should be the same as the length of the data string.
-        cheat_assert(sfs_getsize(TEST_FILE_PATH) == strlen(TEST_FILE_DATA));
-        */
+        cheat_assert(sfs_getsize(TEST_FILE_PATH) == sizeof(TEST_FILE_DATA));
 
         // Try to read from a non-existent file.
         cheat_assert(sfs_getsize(TEST_FILE_PATH "2") == SFS_ERR_FILE_NOT_FOUND);
@@ -273,37 +271,33 @@ CHEAT_TEST(sfs_read,
         // Reading past the end of the data file should fail.
         cheat_assert(sfs_read(test_fd, 0, (int)sizeof(TEST_FILE_DATA)+1, buffer) == SFS_ERR_NOT_ENOUGH_DATA);
 
-
-
-
         // Reading from a non-existent file should fail.
         cheat_assert(sfs_read(MAX_OPEN_FILES, 0, 1, buffer) == SFS_ERR_BAD_FD);
 
-        /* TODO: Uncomment these when `sfs_delete`, `sfs_create`, `sfs_open`, and `sfs_write` are implemented.
         // Erase the test file.
-        sfs_delete(TEST_FILE_PATH);
-        sfs_create(TEST_FILE_PATH, 0);
+        cheat_assert(sfs_delete(TEST_FILE_PATH) == 0);
+        cheat_assert(sfs_create(TEST_FILE_PATH, 0) == 0);
         test_fd = sfs_open(TEST_FILE_PATH);
+        cheat_assert(test_fd >= 0);
 
         // Fill the test file with dollar signs, as a manifestation of how dope the authors are.
         memset(buffer, '$', BLOCK_SIZE);
         memset(referenceBuffer, '$', BLOCK_SIZE);
-        sfs_write(test_fd, -1, BLOCK_SIZE, buffer); // Fill first block.
-        sfs_write(test_fd, -1, BLOCK_SIZE, buffer); // Fill second block.
+        cheat_assert(sfs_write(test_fd, -1, BLOCK_SIZE, buffer) == 0); // Fill first block.
+        cheat_assert(sfs_write(test_fd, -1, BLOCK_SIZE, buffer) == 0); // Fill second block.
 
         // Reading the entire first block should succeed.
         memset(buffer, 0, BLOCK_SIZE);
         cheat_assert(sfs_read(test_fd, 0, BLOCK_SIZE, buffer) == 0);
-        cheat_assert(strncmp(buffer, referenceBuffer, BLOCK_SIZE) == 0);
+        cheat_assert(memcmp(buffer, referenceBuffer, BLOCK_SIZE) == 0);
 
         // Reading the entire second block should succeed.
         memset(buffer, 0, BLOCK_SIZE);
         cheat_assert(sfs_read(test_fd, BLOCK_SIZE, BLOCK_SIZE, buffer) == 0);
-        cheat_assert(strncmp(buffer, referenceBuffer, BLOCK_SIZE) == 0);
+        cheat_assert(memcmp(buffer, referenceBuffer, BLOCK_SIZE) == 0);
 
         // Reading across blocks should fail.
         cheat_assert(sfs_read(test_fd, BLOCK_SIZE-1, 2, buffer) == SFS_ERR_BLOCK_FAULT);
-        */
 )
 
 CHEAT_TEST(sfs_write,
@@ -327,14 +321,11 @@ CHEAT_TEST(sfs_write,
         // Writing over all the data should succeed.
         cheat_assert(sfs_write(test_fd, 0, sizeof(TEST_FILE_DATA), buffer) == 0);
 
-        /* TODO: Uncomment this once `sfs_read` is implemented.
         // Make sure what's read back is correct.
         memset(buffer, 0, BLOCK_SIZE);
         sfs_read(test_fd, 0, sizeof(TEST_FILE_DATA), buffer);
-        cheat_assert(strncmp(buffer, referenceBuffer, sizeof(TEST_FILE_DATA)) == 0);
-        */
+        cheat_assert(memcmp(buffer, referenceBuffer, sizeof(TEST_FILE_DATA)) == 0);
 
-        /* TODO: Uncomment this once `sfs_delete`, `sfs_create`, `sfs_open`, and `sfs_read` are implemented.
         // Erase the file.
         sfs_delete(TEST_FILE_PATH);
         sfs_create(TEST_FILE_PATH, 0);
@@ -350,8 +341,8 @@ CHEAT_TEST(sfs_write,
         for (char i = 0; i < MAX_BLOCKS_PER_FILE; i++) {
             memset(referenceBuffer, 'A'+i, BLOCK_SIZE);
             memset(buffer, 0, BLOCK_SIZE);
-            sfs_read(test_fd, 0, BLOCK_SIZE, buffer);
-            cheat_assert(strncmp(buffer, referenceBuffer, BLOCK_SIZE) == 0);
+            sfs_read(test_fd, i*BLOCK_SIZE, BLOCK_SIZE, buffer);
+            cheat_assert(memcmp(buffer, referenceBuffer, BLOCK_SIZE) == 0);
         }
 
         // Writing across the block boundary should fail.
@@ -359,5 +350,4 @@ CHEAT_TEST(sfs_write,
 
         // Writing too much data should fail.
         cheat_assert(sfs_write(test_fd, -1, 1, buffer) == SFS_ERR_FILE_FULL);
-        */
 )
