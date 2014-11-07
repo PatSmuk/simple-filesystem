@@ -82,7 +82,22 @@ int main()
   int retval = sfs_initialize(0);
     if (retval != 0) {
         printf("Error: %s\n", sfs_error_message(retval));
-        return 1;
+
+        printf("Create new empty filesystem? (y/n) ");
+        fgets(command_buffer, MAX_INPUT_LENGTH, stdin);
+
+        if (command_buffer[0] == 'y') {
+            retval = sfs_initialize(1);
+
+            if (retval != 0) {
+                printf("Error: %s\n", sfs_error_message(retval));
+                printf("Uh oh, looks like that failed too. At least you tried!\n");
+                return 1;
+            }
+        }
+        else {
+            return 1;
+        }
     }
 
   /* do forever:
@@ -108,7 +123,7 @@ int main()
     printf("q: quit - exit this program\n");
     /* read in the next command */
     printf("\nCommand? ");
-    if (gets(command_buffer) == NULL) break;
+    if (fgets(command_buffer, MAX_INPUT_LENGTH, stdin) == NULL) break;
     /* determine which command was requested */
     switch(command_buffer[0]) {
     case 'o':
@@ -213,7 +228,7 @@ int main()
       printf("Enter full path name of file to delete: ");
       scanf(INPUT_BUF_FORMAT,data_buffer_1);
       retval = sfs_delete(data_buffer_1);
-      if (retval > 0) {
+      if (retval == 0) {
 	printf("sfs_delete succeeded.\n");
       }
       else {
@@ -275,7 +290,7 @@ int main()
     }
     if (command_buffer[0] == 'q') break;
     /* cleanup the newline that remains after reading command parameter(s) */
-    gets(command_buffer);
+      fgets(command_buffer, MAX_INPUT_LENGTH, stdin);
   }
     return 0;
 }
