@@ -348,18 +348,6 @@ OpenFile *OpenFile_find_by_descriptor(int descriptor);
 
 
 /*
- * Finds all OpenFiles for `file` and make them into an NULL-terminated array,
- *   setting `openFiles` to the start of the array.
- *
- * The array must be freed by the caller.
- *
- * Possible errors:
- *  - SFS_ERR_OUT_OF_MEMORY
- */
-int OpenFile_find_by_file(const File *file, OpenFile ***openFilesArray);
-
-
-/*
  * Splits an absolute path into a NULL-terminated array of tokens.
  *
  * For example, the path "/foo/bar" would be turned into ["foo", "bar"].

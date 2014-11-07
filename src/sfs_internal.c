@@ -278,46 +278,6 @@ OpenFile * OpenFile_find_by_descriptor(int descriptor) {
 }
 
 
-int OpenFile_find_by_file(const File *file, OpenFile ***openFilesArray) {
-
-    int err_code = 0;
-    unsigned int count = 0;
-    int arrayIndex = 0;
-    OpenFile **array = NULL;
-    *openFilesArray = NULL;
-
-    // Count the number of matching OpenFiles so we know how much to allocate.
-    for (int i = 0; i < MAX_OPEN_FILES; i++) {
-        OpenFile *openFile = &openFiles[i];
-
-        if (openFile->file == file) {
-            count++;
-        }
-    }
-
-    // Allocate the array.
-    array = calloc(count, sizeof(OpenFile*));
-    check_mem(array);
-
-    // Put matching OpenFiles in the array.
-    for (int i = 0; i < MAX_OPEN_FILES; i++) {
-        OpenFile *openFile = &openFiles[i];
-
-        if (openFile->file == file) {
-            array[arrayIndex] = openFile;
-            arrayIndex++;
-        }
-    }
-
-    *openFilesArray = array;
-
-error:
-    free(array);
-    *openFilesArray = NULL;
-    return err_code;
-}
-
-
 int path_to_tokens(const char *path, char ***_tokens) {
 
     int err_code = 0;
