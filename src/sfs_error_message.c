@@ -44,6 +44,7 @@ static const char *errorMessages[] = {
     "There aren't enough blocks on the device to hold all the Files' metadata.", // SFS_ERR_NOT_ENOUGH_BLOCKS_FOR_FILES
     "The blocks are not large enough to hold a single File object.",            // SFS_ERR_BLOCKS_TOO_SMALL_FOR_FILE
     "Deleting the root directory is not permitted.",                            // SFS_ERR_CANT_DELETE_ROOT
+    "You must close that file before deleting it.",                             // SFS_ERR_FILE_OPEN
 };
 
 const char *sfs_error_message(int error_code) {

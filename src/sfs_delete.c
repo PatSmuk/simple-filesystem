@@ -38,17 +38,15 @@ int sfs_delete(char *pathname) {
         check(file->dirContents == NULL,SFS_ERR_DIR_NOT_EMPTY);
     }
 
+    // There must not be any OpenFiles that point to this File.
+    for (i = 0; i < MAX_OPEN_FILES; i++) {
+        OpenFile *openFile = &openFiles[i];
+        check(openFile->file != file, SFS_ERR_FILE_OPEN);
+    }
+
     pFile = File_get_parent(file);
     File_remove_file_from_dir(file,pFile);
     memset(zeroBuffer, 0, BLOCK_SIZE);
-
-    // Release any OpenFiles that refer to this File.
-    for (i = 0; i < MAX_OPEN_FILES; i++) {
-        OpenFile *openFile = &openFiles[i];
-        if (openFile->file == file) {
-            openFile->file = NULL;
-        }
-    }
 
     for(i = 0; i < MAX_BLOCKS_PER_FILE; i++)
     {

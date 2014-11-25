@@ -247,6 +247,12 @@ CHEAT_TEST(sfs_delete,
         // Deleting a directory with files should fail.
         cheat_assert(sfs_delete(TEST_FILE_PATH "2") == SFS_ERR_DIR_NOT_EMPTY);
 
+        // Deleting the file should fail if it is open.
+        test_fd = sfs_open(TEST_FILE_PATH "2/file");
+        cheat_assert(test_fd >= 0);
+        cheat_assert(sfs_delete(TEST_FILE_PATH "2/file") == SFS_ERR_FILE_OPEN);
+        cheat_assert(sfs_close(test_fd) == 0);
+
         // Deleting the file then the directory should succeed.
         cheat_assert(sfs_delete(TEST_FILE_PATH "2/file") == 0);
         cheat_assert(sfs_delete(TEST_FILE_PATH "2") == 0);
@@ -275,6 +281,7 @@ CHEAT_TEST(sfs_read,
         cheat_assert(sfs_read(MAX_OPEN_FILES, 0, 1, buffer) == SFS_ERR_BAD_FD);
 
         // Erase the test file.
+        cheat_assert(sfs_close(test_fd) == 0);
         cheat_assert(sfs_delete(TEST_FILE_PATH) == 0);
         cheat_assert(sfs_create(TEST_FILE_PATH, 0) == 0);
         test_fd = sfs_open(TEST_FILE_PATH);
@@ -327,6 +334,7 @@ CHEAT_TEST(sfs_write,
         cheat_assert(memcmp(buffer, referenceBuffer, sizeof(TEST_FILE_DATA)) == 0);
 
         // Erase the file.
+        sfs_close(test_fd);
         sfs_delete(TEST_FILE_PATH);
         sfs_create(TEST_FILE_PATH, 0);
         test_fd = sfs_open(TEST_FILE_PATH);

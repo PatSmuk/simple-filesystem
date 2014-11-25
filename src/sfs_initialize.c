@@ -261,6 +261,13 @@ int sfs_initialize(int erase) {
             check_err(File_save(file));
             freeBlocks[FileID_to_BlockID(i)] = false;
         }
+
+        // Initialize the OpenFiles.
+        for (int i = 0; i < MAX_OPEN_FILES; i++) {
+            OpenFile *openFile = &openFiles[i];
+            openFile->file = NULL;
+            openFile->lastRead = NULL;
+        }
     }
 
     return 0;

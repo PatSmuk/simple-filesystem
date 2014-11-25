@@ -96,6 +96,9 @@ enum {
     // User tried to delete the root directory, lol.
     SFS_ERR_CANT_DELETE_ROOT,
 
+    // User tried to delete an open file.
+    SFS_ERR_FILE_OPEN,
+
 
     // Used to make sure all errors are negative numbers.
     // New error codes should come before it.
