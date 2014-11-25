@@ -28,6 +28,7 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 // Bump this number whenever a change occurs to the File or FileSystemHeader structs.
 #define SFS_DATA_VERSION 1
@@ -42,13 +43,13 @@ typedef enum {
 
 // A page ID is an ID from 0 to 511, so store it in a 16-bit int.
 // The only valid negative ID is -1, which means “no page”.
-typedef short BlockID;
+typedef int16_t BlockID;
 
 // A file ID is the i-number of the file, from 0 to 63.
 // The only valid negative ID is -1, which means “no file”.
 // This is used as the root directory’s parent (i.e. the
 //   root directory has no parent).
-typedef char FileID;
+typedef int8_t FileID;
 
 
 // The size of each block, in bytes.
