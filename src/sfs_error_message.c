@@ -29,7 +29,7 @@ static const char *errorMessages[] = {
     "Specified read or write operation would cross block boundaries.",          // SFS_ERR_BLOCK_FAULT
     "Directory contains files and must be empty.",                              // SFS_ERR_DIR_NOT_EMPTY
     "File cannot grow any larger.",                                             // SFS_ERR_FILE_FULL
-    "File doesn't contain enough data to satisfy read request.",                // SFS_ERR_NOT_ENOUGH_DATA
+    "File doesn't contain enough data to satisfy read/write request.",          // SFS_ERR_NOT_ENOUGH_DATA
     "File name is too long.",                                                   // SFS_ERR_INVALID_NAME
     "File type is invalid.",                                                    // SFS_ERR_INVALID_TYPE
     "The data file that was loaded could not be validated.",                    // SFS_ERR_INVALID_DATA_FILE
