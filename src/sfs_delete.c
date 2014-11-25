@@ -33,15 +33,15 @@ int sfs_delete(char *pathname) {
     check_err(File_find_by_path(&file,pathname));
     check_err(err_code == SFS_ERR_FILE_NOT_FOUND);
 
-    if(File_is_directory(file))
-    {
-        check(file->dirContents == NULL,SFS_ERR_DIR_NOT_EMPTY);
-    }
-
     // There must not be any OpenFiles that point to this File.
     for (i = 0; i < MAX_OPEN_FILES; i++) {
         OpenFile *openFile = &openFiles[i];
         check(openFile->file != file, SFS_ERR_FILE_OPEN);
+    }
+
+    if(File_is_directory(file))
+    {
+        check(file->dirContents == NULL,SFS_ERR_DIR_NOT_EMPTY);
     }
 
     pFile = File_get_parent(file);
