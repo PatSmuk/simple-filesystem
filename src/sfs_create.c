@@ -61,20 +61,10 @@ int sfs_create(char *pathname, int type) {
     check_err(File_add_file_to_dir(file, pFile));
 
     check_err(File_save(file));
-    if (tokens) {
-        for (i = 0; tokens[i] != NULL; i++) {
-            free(tokens[i]);
-        }
-        free(tokens);
-    }
+    free_tokens(&tokens);
     return 0;
 
 error:
-    if (tokens) {
-        for (i = 0; tokens[i] != NULL; i++) {
-            free(tokens[i]);
-        }
-        free(tokens);
-    }
+    free_tokens(&tokens);
     return err_code;
 }

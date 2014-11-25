@@ -363,6 +363,14 @@ int path_to_tokens(const char *path, char ***tokens);
 
 
 /*
+ * Frees the list of tokens returned from `path_to_tokens` and sets it to `NULL`.
+ *
+ * `tokens` can be a pointer to valid pointer or a pointer to `NULL`.
+ */
+void free_tokens(char ***tokens);
+
+
+/*
  * Calculates the BlockID of the block that File `file_id` is stored in.
  *
  * For example, let's assume that BLOCK_SIZE is 128, sizeof(File) is 40, and file_id is 10:

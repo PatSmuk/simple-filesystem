@@ -76,20 +76,12 @@ int File_find_by_path(File **_file, const char *path) {
     }
 
     // Prevent memory leaks.
-    for (int i = 0; tokens[i] != NULL; i++) {
-        free(tokens[i]);
-    }
-    free(tokens);
+    free_tokens(&tokens);
     *_file = file;
     return 0;
 
 error:
-    if (tokens) {
-        for (int i = 0; tokens[i] != NULL; i++) {
-            free(tokens[i]);
-        }
-        free(tokens);
-    }
+    free_tokens(&tokens);
     return err_code;
 }
 
@@ -337,11 +329,17 @@ int path_to_tokens(const char *path, char ***_tokens) {
     return 0;
 
 error:
-    if (tokens) {
-        for (int i = 0; tokens[i] != NULL; i++) {
-            free(tokens[i]);
-        }
-        free(tokens);
-    }
+    free_tokens(&tokens);
     return err_code;
+}
+
+
+void free_tokens(char ***tokens) {
+    if (*tokens) {
+        for (int i = 0; (*tokens)[i] != NULL; i++) {
+            free((*tokens)[i]);
+        }
+        free(*tokens);
+    }
+    *tokens = NULL;
 }

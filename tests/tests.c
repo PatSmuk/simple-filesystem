@@ -112,22 +112,20 @@ CHEAT_TEST(path_to_tokens,
         // "/" should result in [].
         cheat_assert(path_to_tokens("/", &tokens) == 0);
         cheat_assert(tokens[0] == NULL);
-        free(tokens);
+        free_tokens(&tokens);
 
         // "/foo" should result in ["foo"].
         cheat_assert(path_to_tokens("/foo", &tokens) == 0);
         cheat_assert(strcmp(tokens[0], "foo") == 0);
         cheat_assert(tokens[1] == NULL);
-        free(tokens[0]);
-        free(tokens);
+        free_tokens(&tokens);
 
         // "/foo/bar" should result in ["foo", "bar"].
         cheat_assert(path_to_tokens("/foo/bar", &tokens) == 0);
         cheat_assert(strcmp(tokens[0], "foo") == 0);
         cheat_assert(strcmp(tokens[1], "bar") == 0);
-        free(tokens[0]);
-        free(tokens[1]);
-        free(tokens);
+        cheat_assert(tokens[2] == NULL);
+        free_tokens(&tokens);
 
         // A path that ends with a '/' should fail.
         cheat_assert(path_to_tokens("/foo/", &tokens) == SFS_ERR_INVALID_PATH);
@@ -143,8 +141,7 @@ CHEAT_TEST(path_to_tokens,
         buffer[MAX_PATH_COMPONENT_LENGTH+1] = '\0';
         cheat_assert(path_to_tokens(buffer, &tokens) == 0);
         cheat_assert(strncmp(tokens[0], buffer+1, MAX_PATH_COMPONENT_LENGTH) == 0);
-        free(tokens[0]);
-        free(tokens);
+        free_tokens(&tokens);
 )
 
 CHEAT_TEST(sfs_initialize,
