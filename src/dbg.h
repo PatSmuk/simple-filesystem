@@ -30,6 +30,6 @@
 
 #define check_debug(A, C, M, ...) if (!(A)) { err_code=C; debug(M, ##__VA_ARGS__); goto error; }
 
-#define check_err(C) if ((C) < 0) { err_code=(C); goto error; }
+#define check_err(A) if ((err_code = (A)) < 0) { goto error; }
 
 #endif
