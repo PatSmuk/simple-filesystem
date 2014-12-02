@@ -60,6 +60,7 @@ int sfs_write(int fd, int start, int length, char *mem_pointer) {
         }
         // Update the File's size.
         file->size = file->size + length;
+        File_save(file);
 }
     // 3.
     else {
